@@ -17,12 +17,12 @@ class ApplicationController < ActionController::Base
 
   acts_as_token_authentication_handler_for User, fallback: :none
   layout 'catarse_bootstrap'
-  protect_from_forgery
+  protect_from_forgery with: :null_session, if: Proc.new { |c| c.request.format == 'application/json' }
 
   before_filter :configure_permitted_parameters, if: :devise_controller?
 
   helper_method :referral, :render_projects, :is_projects_home?,
-                :render_feeds, :public_settings
+              :render_feeds, :public_settings
 
   before_filter :set_locale
 
@@ -124,9 +124,6 @@ class ApplicationController < ActionController::Base
   end
 
   def force_www
-    if request.subdomain.blank? && Rails.env.production?
-      redirect_to request.original_url.gsub(/^https?\:\/\//, 'https://www.')
-    end
   end
 
   def detect_old_browsers
